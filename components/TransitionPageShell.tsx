@@ -90,7 +90,9 @@ export function TransitionPageShell({ children }: { children: ReactNode }) {
         style={{
           position: "fixed",
           top: 32,
-          left: 96,
+          // Match the article's outer padding so the back button lines up
+          // with the page's left edge across breakpoints.
+          left: "clamp(20px, 5vw, 96px)",
           zIndex: 62,
           display: "inline-flex",
           alignItems: "center",

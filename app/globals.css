@@ -66,7 +66,22 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Desktop locks scroll — the wheel listener owns vertical input and the
+     stage is letterboxed to a fixed aspect. Mobile needs native scroll for
+     the full-screen snap chapters in HomeMobile, so we relax this below
+     the breakpoint. */
   overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow: auto;
+    /* Background ground for mobile is the riso shadow ink — matches the
+       transition canvas, so the snap-chapter sections (which paint their
+       own per-chapter gradients) sit on the same color as the page chrome. */
+    background: #22201d;
+  }
 }
 
 button {

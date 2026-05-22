@@ -38,7 +38,7 @@ export function CaseStudyPage({ project, study }: Props) {
         style={{
           maxWidth: 760,
           margin: 0,
-          padding: "140px 96px 120px",
+          padding: "120px clamp(20px, 5vw, 96px) 100px",
         }}
       >
         {/* Meta */}
@@ -53,10 +53,11 @@ export function CaseStudyPage({ project, study }: Props) {
             style={{
               fontFamily: "var(--font-fraunces), serif",
               fontWeight: 300,
-              fontSize: 124,
+              fontSize: "clamp(56px, 13vw, 124px)",
               lineHeight: 0.92,
               letterSpacing: "-0.03em",
               margin: "18px 0 16px",
+              wordBreak: "break-word",
             }}
           >
             {study.realName ?? project.name}
@@ -90,7 +91,7 @@ export function CaseStudyPage({ project, study }: Props) {
               fontFamily: "var(--font-fraunces), serif",
               fontStyle: "italic",
               fontWeight: 300,
-              fontSize: 22,
+              fontSize: "clamp(18px, 4.5vw, 22px)",
               lineHeight: 1.4,
               color: FG_SOFT,
               margin: "0 0 64px",
@@ -107,7 +108,7 @@ export function CaseStudyPage({ project, study }: Props) {
           <p
             style={{
               fontFamily: "var(--font-inter), sans-serif",
-              fontSize: 18,
+              fontSize: "clamp(16px, 4vw, 18px)",
               lineHeight: 1.55,
               color: FG_SOFT,
               margin: "0 0 56px",

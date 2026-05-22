@@ -27,7 +27,7 @@ export function AboutPage() {
         style={{
           maxWidth: 760,
           margin: 0,
-          padding: "140px 96px 120px",
+          padding: "120px clamp(20px, 5vw, 96px) 100px",
         }}
       >
         <div style={dropStyle(0)}>
@@ -39,7 +39,7 @@ export function AboutPage() {
             style={{
               fontFamily: "var(--font-fraunces), serif",
               fontWeight: 300,
-              fontSize: 132,
+              fontSize: "clamp(56px, 14vw, 132px)",
               lineHeight: 0.92,
               letterSpacing: "-0.03em",
               margin: "18px 0 26px",
@@ -55,7 +55,7 @@ export function AboutPage() {
               fontFamily: "var(--font-fraunces), serif",
               fontStyle: "italic",
               fontWeight: 300,
-              fontSize: 24,
+              fontSize: "clamp(18px, 5vw, 24px)",
               lineHeight: 1.35,
               color: FG_SOFT,
               margin: "0 0 80px",
@@ -236,7 +236,7 @@ function Section({
       <div
         style={{
           fontFamily: "var(--font-inter), sans-serif",
-          fontSize: 18,
+          fontSize: "clamp(16px, 4vw, 18px)",
           lineHeight: 1.55,
           color: FG_SOFT,
           margin: 0,

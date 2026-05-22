@@ -16,8 +16,8 @@ export function Header({ onBeforeNavigate }: Props) {
       style={{
         position: "absolute",
         top: 32,
-        left: 96,
-        right: 96,
+        left: "clamp(20px, 5vw, 96px)",
+        right: "clamp(20px, 5vw, 96px)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
