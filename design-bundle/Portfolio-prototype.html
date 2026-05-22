@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Your Name — Selected Works</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0a0a0a; --fg: #efefec; --fg-soft: rgba(239,239,236,0.82); --fg-mute: rgba(239,239,236,0.55); --fg-dim: rgba(239,239,236,0.42); --line: rgba(239,239,236,0.18); }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--fg); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  #stage-wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage { position: relative; width: 1440px; height: 900px; transform-origin: 50% 50%; overflow: hidden; background: var(--bg); }
+  button { font: inherit; }
+  @keyframes heroFromBelow { from { opacity: 0; transform: translateY(48px) rotate(-2.2deg); } to { opacity: 1; transform: translateY(0) rotate(0deg); } }
+  @keyframes heroFromAbove { from { opacity: 0; transform: translateY(-48px) rotate(2.2deg); } to { opacity: 1; transform: translateY(0) rotate(0deg); } }
+</style>
+</head>
+<body>
+<div id="stage-wrap"><div id="stage"><div id="root"></div></div></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script>
+  // Scale the 1440x900 stage to fit the viewport while preserving aspect.
+  (function fitStage() {
+    const stage = document.getElementById('stage');
+    function apply() {
+      const k = Math.min(window.innerWidth / 1440, window.innerHeight / 900);
+      stage.style.transform = `scale(${k})`;
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  })();
+</script>
+
+<script type="text/babel">
+const W = 1440, H = 900;
+const ACCENT = '#d97757';
+const EASE = 'cubic-bezier(.4,.05,.15,1)';
+const DUR = '.6s';
+
+const PROJECTS = [
+  { slug: 'fieldnote',    name: 'Fieldnote',     blurb: 'A reading app that thinks in the margins, for messy thinkers and serial annotators.', year: '2025' },
+  { slug: 'kelp',         name: 'Kelp',          blurb: 'Coastal-mapping toolkit for kelp-farming co-ops along the North Atlantic.',          year: '2024' },
+  { slug: 'lacuna',       name: 'Lacuna',        blurb: 'A typeface and a website for a small press that publishes nothing but lost books.',  year: '2024' },
+  { slug: 'tonewheel',    name: 'Tonewheel',     blurb: 'Browser-native synth that responds to your room, not your keyboard.',                year: '2023' },
+  { slug: 'parade',       name: 'Parade',        blurb: 'Open-data dashboard for municipal events. Pet project; surprisingly used.',          year: '2023' },
+  { slug: 'softline',     name: 'Softline',      blurb: 'Identity + product for a sleep-tech startup. Mostly the bits between screens.',      year: '2022' },
+  { slug: 'almanac',      name: 'Almanac',       blurb: 'A weather almanac for people who garden. Daily, hyperlocal, prose-first.',           year: '2022' },
+  { slug: 'echoroom',     name: 'Echo Room',     blurb: 'Voice-only social experiment. Quiet on purpose.',                                     year: '2021' },
+  { slug: 'foundry',      name: 'Field Foundry', blurb: 'Brand + book for a small-batch furniture maker.',                                     year: '2020' },
+];
+
+const TAGLINES = [
+  "Tagline 04/10 — wherever, whenever",
+  "Tagline 02/10 — the designer you didn't know you needed",
+  "Tagline 07/10 — every brief you take, I'll be helping you",
+  "Tagline 09/10 — only one designer left!!! #darkpatterns",
+];
+
+function Header() {
+  return (
+    <div style={{
+      position: 'absolute', top: 32, left: 96, right: 96,
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500,
+      letterSpacing: '0.04em', zIndex: 5,
+    }}>
+      <span style={{ textTransform: 'uppercase' }}>Your Name</span>
+      <span style={{ textTransform: 'uppercase', cursor: 'pointer' }}>About</span>
+    </div>
+  );
+}
+
+function Tagline({ text }) {
+  return (
+    <div style={{
+      position: 'absolute', bottom: 28, left: 96,
+      display: 'flex', alignItems: 'center', gap: 10,
+      fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+      letterSpacing: '0.08em', textTransform: 'uppercase',
+      color: 'rgba(239,239,236,0.45)', zIndex: 5,
+    }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: '50%', background: ACCENT,
+        boxShadow: `0 0 12px ${ACCENT}`,
+      }}></span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function Home() {
+  const [zone, setZone] = React.useState(null);
+  const [projectIdx, setProjectIdx] = React.useState(0);
+  const [dir, setDir] = React.useState(1);
+  const [focused, setFocused] = React.useState(false);
+  const [tagline] = React.useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
+
+  const isHero = zone === 'hero';
+  const isDial = zone === 'dial';
+  const current = PROJECTS[projectIdx];
+
+  // Dial geometry — ~30% of the wheel sits past the right edge by design.
+  const cx = 1370, cy = 480;
+  const rOuter = 210, rTickIn = 188, rLabel = 246;
+  const SEG = 360 / PROJECTS.length;
+  const rotationDeg = -projectIdx * SEG;
+  const rotRad = rotationDeg * Math.PI / 180;
+
+  const ticks = PROJECTS.map((p, i) => {
+    const angle = (180 + i * SEG) * Math.PI / 180;
+    return { p, i, angle, x: Math.cos(angle), y: Math.sin(angle) };
+  });
+
+  // Capture scroll on the dial zone — one accumulated threshold = one notch.
+  const dialOverlayRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!isDial && !focused) return;
+    const el = dialOverlayRef.current;
+    if (!el) return;
+    let accum = 0;
+    let lastSwap = 0;
+    const onWheel = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      accum += e.deltaY;
+      const now = Date.now();
+      if (Math.abs(accum) >= 50 && now - lastSwap > 360) {
+        const d = accum > 0 ? 1 : -1;
+        setDir(d);
+        setProjectIdx((p) => (p + d + PROJECTS.length) % PROJECTS.length);
+        accum = 0;
+        lastSwap = now;
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [isDial, focused]);
+
+  // Click a notch — pick the shorter rotation direction, jump, exit focus.
+  const jumpToIndex = (newIdx) => {
+    setFocused(false);
+    if (newIdx === projectIdx) return;
+    const len = PROJECTS.length;
+    const forward = (newIdx - projectIdx + len) % len;
+    const backward = (projectIdx - newIdx + len) % len;
+    const d = forward <= backward ? 1 : -1;
+    setDir(d);
+    setProjectIdx(newIdx);
+  };
+
+  React.useEffect(() => {
+    if (!focused) return;
+    const onKey = (e) => { if (e.key === 'Escape') setFocused(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [focused]);
+
+  const FOCUS_CX = 720, FOCUS_CY = 480, FOCUS_SCALE = 1.55;
+  const dialOffsetX = focused ? FOCUS_CX - cx : 0;
+  const dialOffsetY = focused ? FOCUS_CY - cy : 0;
+  const dialScale = focused ? FOCUS_SCALE : 1;
+
+  return (
+    <div style={{ width: W, height: H, position: 'relative', overflow: 'hidden', background: '#0a0a0a', color: '#efefec', fontFamily: '"Inter", system-ui, sans-serif' }}>
+      <Header />
+
+      {/* Hero hover zone — left; morphs layout to B-state on enter */}
+      <div
+        onMouseEnter={() => setZone('hero')}
+        onMouseLeave={() => setZone(null)}
+        style={{
+          position: 'absolute', left: 0, top: 88, bottom: 56,
+          width: isHero ? 1100 : 760,
+          zIndex: isHero ? 7 : 6,
+          background: 'transparent',
+          transition: `width ${DUR} ${EASE}`,
+          cursor: 'pointer',
+          pointerEvents: isDial ? 'none' : 'auto',
+        }}
+      />
+
+      {/* Dial hover zone — right; captures scroll, click toggles focus */}
+      <div
+        ref={dialOverlayRef}
+        onMouseEnter={() => !focused && setZone('dial')}
+        onMouseLeave={() => !focused && setZone(null)}
+        onClick={() => setFocused((f) => !f)}
+        style={{
+          position: 'absolute',
+          left: focused ? 0 : 760,
+          top: focused ? 0 : 88,
+          right: 0,
+          bottom: focused ? 0 : 56,
+          zIndex: focused ? 9 : (isDial ? 7 : 6),
+          background: focused ? 'rgba(8,8,8,0.62)' : 'transparent',
+          cursor: focused ? 'zoom-out' : (isDial ? 'zoom-in' : 'pointer'),
+          pointerEvents: (isHero && !focused) ? 'none' : 'auto',
+          transition: `left ${DUR} ${EASE}, top ${DUR} ${EASE}, bottom ${DUR} ${EASE}, background-color ${DUR} ${EASE}`,
+        }}
+      />
+
+      {/* Hero — left default, centered when hero-zone hovered, fades in focus */}
+      <div style={{
+        position: 'absolute',
+        left: isHero ? '50%' : 96,
+        top: isHero ? 196 : 232,
+        transform: isHero ? 'translateX(-50%)' : 'none',
+        width: isHero ? 'auto' : 680,
+        textAlign: isHero ? 'center' : 'left',
+        zIndex: 3,
+        pointerEvents: 'none',
+        opacity: focused ? 0 : 1,
+        transition: `left ${DUR} ${EASE}, top ${DUR} ${EASE}, transform ${DUR} ${EASE}, width ${DUR} ${EASE}, opacity ${DUR} ${EASE}`,
+      }}>
+        {/* Inner — re-mounts per project so the chapter swap animates */}
+        <div
+          key={`hero-${projectIdx}`}
+          style={{
+            transformOrigin: isHero ? '50% 50%' : '100% 50%',
+            animation: isHero ? 'none' : `${dir > 0 ? 'heroFromBelow' : 'heroFromAbove'} .6s ${EASE}`,
+          }}
+        >
+          <div style={{
+            fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
+            letterSpacing: isHero ? '0.2em' : '0.1em',
+            textTransform: 'uppercase',
+            color: 'rgba(239,239,236,0.55)', marginBottom: 24,
+            transition: `letter-spacing ${DUR} ${EASE}`,
+          }}>
+            {isHero
+              ? <>Chapter {String(projectIdx + 1).padStart(2, '0')} &nbsp;—&nbsp; 09</>
+              : <>◦ {String(projectIdx + 1).padStart(2, '0')} / 09 &nbsp;·&nbsp; {current.year}</>}
+          </div>
+          <div style={{
+            fontFamily: '"Fraunces", serif', fontWeight: 300,
+            fontSize: isHero ? 200 : 168,
+            lineHeight: 0.92, letterSpacing: '-0.03em', marginBottom: 28,
+            transition: `font-size ${DUR} ${EASE}`,
+          }}>
+            {current.name}
+          </div>
+          <div style={{
+            fontFamily: '"Inter", sans-serif', fontSize: 17, lineHeight: 1.45,
+            maxWidth: isHero ? 520 : 460,
+            margin: isHero ? '0 auto 36px' : '0 0 40px',
+            color: 'rgba(239,239,236,0.82)',
+            transition: `max-width ${DUR} ${EASE}, margin ${DUR} ${EASE}`,
+          }}>
+            {current.blurb}
+          </div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 12,
+            fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600,
+            letterSpacing: '0.06em', textTransform: 'uppercase',
+            paddingBottom: 6, borderBottom: `1px solid ${ACCENT}`,
+          }}>
+            {isHero
+              ? <><span style={{ width: 36, height: 1, background: ACCENT }}></span>Open case study</>
+              : <><span style={{ fontSize: 16 }}>→</span> Open case study</>}
+          </div>
+        </div>
+      </div>
+
+      {/* Dial group — fades in B-state; translates + scales in focus mode */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: focused ? 10 : 3,
+        opacity: isHero ? 0 : 1,
+        transform: focused
+          ? `translate(${dialOffsetX}px, ${dialOffsetY}px) scale(${dialScale})`
+          : isHero ? 'translateX(180px)' : 'translateX(0)',
+        transformOrigin: `${cx}px ${cy}px`,
+        transition: `opacity ${DUR} ${EASE}, transform ${DUR} ${EASE}`,
+        pointerEvents: 'none',
+      }}>
+        <svg
+          style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, pointerEvents: 'none', overflow: 'visible' }}
+          viewBox={`0 0 ${W} ${H}`}
+        >
+          <g style={{
+            transform: `rotate(${rotationDeg}deg)`,
+            transformOrigin: `${cx}px ${cy}px`,
+            transition: `transform .55s ${EASE}`,
+          }}>
+            <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(239,239,236,0.18)" strokeWidth="1" />
+            <circle cx={cx} cy={cy} r={rOuter - 32} fill="none" stroke="rgba(239,239,236,0.07)" strokeWidth="1" strokeDasharray="2 6" />
+            {ticks.map(({ p, x, y }) => (
+              <line key={p.slug}
+                x1={cx + x * rTickIn} y1={cy + y * rTickIn}
+                x2={cx + x * rOuter}  y2={cy + y * rOuter}
+                stroke="rgba(239,239,236,0.42)" strokeWidth="1" strokeLinecap="round"
+              />
+            ))}
+          </g>
+          {/* Fixed active marker at 9 o'clock */}
+          <line
+            x1={cx - rTickIn} y1={cy}
+            x2={cx - (rOuter + 18)} y2={cy}
+            stroke={ACCENT} strokeWidth="2.4" strokeLinecap="round"
+          />
+          {(() => {
+            const span = (SEG / 2) * Math.PI / 180 * 0.6;
+            const a1 = Math.PI - span, a2 = Math.PI + span;
+            const r = rOuter + 8;
+            const p1x = cx + Math.cos(a1) * r, p1y = cy + Math.sin(a1) * r;
+            const p2x = cx + Math.cos(a2) * r, p2y = cy + Math.sin(a2) * r;
+            return <path d={`M ${p1x} ${p1y} A ${r} ${r} 0 0 1 ${p2x} ${p2y}`}
+              stroke={ACCENT} strokeWidth="2.4" fill="none" strokeLinecap="round" />;
+          })()}
+        </svg>
+
+        {/* Labels orbit with the spin; left hemisphere only, fade with distance */}
+        {ticks.map(({ p, i, angle }) => {
+          const a = angle + rotRad;
+          const x = Math.cos(a), y = Math.sin(a);
+          if (x > 0.06) return null;
+          const distance = Math.min(
+            Math.abs(i - projectIdx),
+            PROJECTS.length - Math.abs(i - projectIdx)
+          );
+          const isCurrent = i === projectIdx;
+          const opacity = isCurrent ? 1 : Math.max(0.22, 0.7 - distance * 0.16);
+          return (
+            <div key={p.slug} style={{
+              position: 'absolute', left: cx, top: cy,
+              transform: `translate(${x * rLabel}px, ${y * rLabel}px) translate(-100%, -50%)`,
+              transition: `transform .55s ${EASE}, opacity .55s ${EASE}`,
+              paddingRight: 12,
+              display: 'flex', alignItems: 'center', gap: 8,
+              fontFamily: '"Inter", sans-serif',
+              fontSize: isCurrent ? 14 : 12,
+              fontWeight: isCurrent ? 600 : 500,
+              letterSpacing: '0.03em',
+              color: '#efefec', opacity, whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}>
+              <span style={{
+                fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+                color: 'rgba(239,239,236,0.45)',
+              }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              {p.name}
+              {isCurrent && <span style={{
+                width: 6, height: 6, borderRadius: '50%', background: ACCENT,
+                boxShadow: `0 0 8px ${ACCENT}`,
+              }}></span>}
+            </div>
+          );
+        })}
+
+        {/* Center wordmark + counter */}
+        <div style={{
+          position: 'absolute', left: cx, top: cy, zIndex: 4,
+          transform: 'translate(-50%, -50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%',
+            border: `1.2px solid ${ACCENT}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: '"Fraunces", serif', fontWeight: 400, fontSize: 22,
+            color: ACCENT, letterSpacing: '-0.02em', marginBottom: 14,
+          }}>
+            Y
+          </div>
+          <div style={{
+            fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+            letterSpacing: '0.16em', textTransform: 'uppercase',
+            color: 'rgba(239,239,236,0.55)',
+          }}>
+            {String(projectIdx + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(PROJECTS.length).padStart(2, '0')}
+          </div>
+        </div>
+
+        {/* Rotation hint — brightens when dial is active */}
+        <div style={{
+          position: 'absolute', left: cx - rOuter + 24, top: cy + rOuter + 36, zIndex: 5,
+          display: 'flex', alignItems: 'center', gap: 10,
+          fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+          letterSpacing: '0.16em', textTransform: 'uppercase',
+          color: isDial ? ACCENT : 'rgba(239,239,236,0.4)',
+          whiteSpace: 'nowrap',
+          transition: `color ${DUR} ${EASE}`,
+        }}>
+          <span style={{
+            width: 22, height: 22, borderRadius: '50%',
+            border: `1px solid ${isDial ? ACCENT : 'rgba(239,239,236,0.3)'}`,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11,
+            transition: `border-color ${DUR} ${EASE}`,
+          }}>↕</span>
+          {isDial ? 'Scrolling spins the wheel' : 'Hover · scroll to rotate'}
+        </div>
+      </div>
+
+      {/* Snap dots — appear in B-state */}
+      <div style={{
+        position: 'absolute', right: 80, top: '50%',
+        display: 'flex', flexDirection: 'column', gap: 14, zIndex: 4,
+        opacity: isHero ? 1 : 0,
+        transform: isHero ? 'translate(0, -50%)' : 'translate(40px, -50%)',
+        transition: `opacity ${DUR} ${EASE} .1s, transform ${DUR} ${EASE} .1s`,
+        pointerEvents: 'none',
+      }}>
+        {PROJECTS.map((p, i) => (
+          <div key={p.slug} style={{
+            display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'flex-end',
+            fontFamily: '"Inter", sans-serif', fontSize: 11, fontWeight: 500,
+            letterSpacing: '0.04em',
+            color: i === projectIdx ? '#efefec' : 'transparent',
+          }}>
+            <span style={{ whiteSpace: 'nowrap' }}>{p.name.toUpperCase()}</span>
+            <span style={{
+              width: i === projectIdx ? 22 : 8, height: 2,
+              background: i === projectIdx ? ACCENT : 'rgba(239,239,236,0.32)',
+            }}></span>
+          </div>
+        ))}
+      </div>
+
+      {/* Scroll/arrow hint in B-state */}
+      <div style={{
+        position: 'absolute', bottom: 76, left: '50%', transform: 'translateX(-50%)',
+        fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+        letterSpacing: '0.18em', textTransform: 'uppercase',
+        color: 'rgba(239,239,236,0.45)',
+        opacity: isHero ? 1 : 0,
+        transition: `opacity ${DUR} ${EASE} .15s`,
+        pointerEvents: 'none',
+      }}>
+        ↑ ↓ &nbsp; scroll or arrow keys
+      </div>
+
+      <Tagline text={tagline} />
+
+      {/* Notch hit pills — wide left-extending pills covering notch + label.
+          Default: left-hemisphere notches only. Focus: all 9 (whole wheel visible). */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: focused ? 11 : 8, pointerEvents: 'none' }}>
+        {ticks.map(({ p, i, angle }) => {
+          const a = angle + rotRad;
+          const xx = Math.cos(a), yy = Math.sin(a);
+          if (!focused && xx > 0.06) return null;
+          const px = cx + dialOffsetX + xx * rOuter * dialScale;
+          const py = cy + dialOffsetY + yy * rOuter * dialScale;
+          const hitW = 220 * dialScale;
+          const hitH = 70 * dialScale;
+          const SHIFT_RIGHT = new Set([0, 1, 2, 8]);
+          const overR = (SHIFT_RIGHT.has(i) ? 60 : 24) * dialScale;
+          return (
+            <div
+              key={`hit-${p.slug}`}
+              onClick={(e) => { e.stopPropagation(); jumpToIndex(i); }}
+              style={{
+                position: 'absolute',
+                left: px - hitW + overR,
+                top: py - hitH / 2,
+                width: hitW,
+                height: hitH,
+                borderRadius: hitH / 2,
+                cursor: 'pointer',
+                pointerEvents: isHero ? 'none' : 'auto',
+                opacity: isHero ? 0 : 1,
+                transition: `left .55s ${EASE}, top .55s ${EASE}, width .55s ${EASE}, height .55s ${EASE}, opacity ${DUR} ${EASE}`,
+                background: 'transparent',
+              }}
+              title={`Jump to ${p.name}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Focus-mode close button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setFocused(false); }}
+        style={{
+          position: 'absolute', top: 24, right: 96, zIndex: 12,
+          width: 38, height: 38, borderRadius: '50%',
+          border: `1px solid rgba(239,239,236,0.45)`,
+          background: 'rgba(8,8,8,0.4)', color: '#efefec',
+          cursor: 'pointer', fontFamily: '"Inter", sans-serif',
+          fontSize: 18, lineHeight: 1, padding: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: focused ? 1 : 0,
+          pointerEvents: focused ? 'auto' : 'none',
+          transition: `opacity ${DUR} ${EASE}`,
+        }}
+        aria-label="Exit focus"
+      >×</button>
+
+      {/* Focus-mode chapter info below the scaled-up dial */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 56, transform: 'translateX(-50%)',
+        textAlign: 'center', zIndex: 11,
+        maxWidth: 560, width: '100%', padding: '0 32px',
+        opacity: focused ? 1 : 0,
+        transition: `opacity ${DUR} ${EASE} ${focused ? '.22s' : '0s'}`,
+        pointerEvents: 'none',
+      }}>
+        <div style={{
+          fontFamily: '"Inter", sans-serif', fontSize: 15, lineHeight: 1.55,
+          color: 'rgba(239,239,236,0.82)', marginBottom: 22,
+        }}>
+          {current.blurb}
+        </div>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 12,
+          fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600,
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          paddingBottom: 6, borderBottom: `1px solid ${ACCENT}`,
+          color: '#efefec',
+        }}>
+          <span style={{ fontSize: 16 }}>→</span> Open case study
+        </div>
+        <div style={{
+          marginTop: 22,
+          fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: 'rgba(239,239,236,0.4)',
+        }}>
+          esc or click backdrop to exit
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Home />);
+</script>
+</body>
+</html>
