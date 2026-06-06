@@ -34,9 +34,24 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://labibkarim.com"),
   title: "Labib Karim — Selected Works",
   description:
     "Portfolio of Labib Karim — applied AI, security, hardware, and the systems-level work behind them.",
+  openGraph: {
+    title: "Labib Karim — Selected Works",
+    description:
+      "Applied AI, security, hardware, and the systems-level work behind them.",
+    url: "https://labibkarim.com",
+    siteName: "Labib Karim",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Labib Karim — Selected Works",
+    description:
+      "Applied AI, security, hardware, and the systems-level work behind them.",
+  },
 };
 
 export const viewport: Viewport = {
