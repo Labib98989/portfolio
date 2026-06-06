@@ -186,3 +186,22 @@ year. Visitor knows it's unbuilt before they click.
 **Case study meat:** the architecture itself — how the pieces fit, the
 hard problems (latency, on-device vs cloud, privacy, model selection),
 where I am right now, what's next.
+
+
+
+
+
+So, I am nearing the end of my first year. Like I am on 10th month. And I first started coding after entering university. And by now, I have made like ~10 projects. Each of them spanning everything from software engineering, AI/ML, cybersecurity, web dev, mobile, game dev, data science, embedded systems. These are my projects.
+1. VS Code extension + GitHub bot that catches blind AI copy-paste.
+2. Crypto rug-pull detector.
+3. Discord bot for class routines. Free to host even at 10k users.
+4. Companion web app for an event. + a few other portfolios each with increasing complexity.
+5. 3D avatar interface for AI chatbots.
+6. Mobile app that helps with face blindness (prosopagnosia).
+7. Rhythm fighting game in SDL3 + raylib, no engine, pixel art.
+8. Standalone groovebox — $10 membrane keyboard + Raspberry Pi.
+Notes per key, instrument switching, loop recording, beat manipulation.
+9. HealthTech app planned around RAG + Vision LM + TTS + local
+trained models.
+10. Plus a few more placements at different ctf competitions which also checks out cybersecuirty.
+11. And there's hackathons, business case studies, business pitch competitions etc.

@@ -84,15 +84,15 @@ with the accent.
 
 | # | Chapter | Bg (primary) | Accent | Glyph subject |
 |---|---------|--------------|--------|---------------|
-| 1 | Dev Tooling | Manuscript cream `#F0E9D8` | Sunflower `#FFD200` | Em-dash with text-line fragments above/below |
-| 2 | Blockchain Security | Midnight navy `#1A2238` | Fluorescent Red `#FF4844` | Broken chain link (two links, one snapping) |
-| 3 | Cost Engineering | Kraft / manila `#D9C9A8` | Forest Green `#3D7B5C` | $0 as a postmark/stamp |
-| 4 | Frontend | Warm gray `#E8E5DC` | Cornflower `#62A8E5` | Event wristband with tear-strip |
-| 5 | Embodied AI | Deep aubergine `#3A1F4D` | Fluorescent Pink `#FF48B0` | Speech bubble containing an eye |
-| 6 | Assistive Tech | Sea-foam `#A8C5BC` | Melon `#FFAE63` | Featureless face with one distinctive marker |
-| 7 | Game Engineering | Ink charcoal `#1F1F2B` | Marine Red `#D2515E` | Hit-spark / impact burst |
-| 8 | Embedded Audio | Manual cream `#E5DCC8` | Mustard `#D6A33B` | Single membrane key with waveform emanating |
-| 9 | AI Systems | Pale blueprint `#E0E7EF` | Federal Blue `#3955A3` | Schematic node (box with in/out arrows) |
+| 1 | Dev Tooling | Manuscript cream `#F4EAC2` | Sunflower `#FFD200` | Em-dash with text-line fragments above/below |
+| 2 | Blockchain Security | Midnight navy `#15203F` | Fluorescent Red `#FF3B33` | Broken chain link (two links, one snapping) |
+| 3 | Cost Engineering | Kraft / manila `#DED0A0` | Emerald Green `#2BA15E` | $0 as a postmark/stamp |
+| 4 | Frontend | Cool paper `#E2EAF3` | Azure `#2F97F0` | Event wristband with tear-strip |
+| 5 | Embodied AI | Deep aubergine `#3A1856` | Fluorescent Pink `#FF36AE` | Speech bubble containing an eye |
+| 6 | Assistive Tech | Sea-foam `#9CD0BE` | Melon `#FF9B41` | Featureless face with one distinctive marker |
+| 7 | Game Engineering | Ink charcoal `#1B1A29` | Marine Red `#F23B52` | Hit-spark / impact burst |
+| 8 | Embedded Audio | Manual cream `#EADFBA` | Mustard `#F0A718` | Single membrane key with waveform emanating |
+| 9 | AI Systems | Pale blueprint `#DBE5F4` | Federal Blue `#2E59DE` | Schematic node (box with in/out arrows) |
 
 ### Glyph-subject rationale (why this, not the stock answer)
 
@@ -139,8 +139,10 @@ Each chapter's bg is a **two-stop gradient**, not a flat color.
 
 **Rule for the secondary stop (applied uniformly):**
 
-> Secondary stop = primary shifted ~15% toward the accent hue, at slightly
-> lower luminance.
+> Secondary stop = a strong, saturated pull toward the accent hue (~40–60%),
+> so the gradient reads as a real colored glow rather than near-flat paper.
+> On light chapters it's an accent-washed tint of the paper; on dark
+> chapters it's a colored-spotlight center over the deep ground.
 
 The hover zones interpolate the gradient direction — left-zone hover pulls
 the accent-leaning stop to the left of the canvas; right-zone hover pulls
