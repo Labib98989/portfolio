@@ -291,20 +291,29 @@ export function MobileApp() {
   );
 }
 
-// First-visit gesture legend. Dismisses on tap and never returns.
+// First-visit gesture legend. Each row names the swipe motion explicitly
+// ("Swipe left"), so the arrow reads as the action you take — not where a panel
+// lives — with the muted word below being what that swipe opens. This kills the
+// spatial ambiguity (panels enter from the opposite side of the swipe) while
+// staying gesture-correct. Dismisses on tap and never returns.
 function Coachmark({ accent, onDismiss }: { accent: string; onDismiss: () => void }) {
-  const label: CSSProperties = {
-    fontFamily: "var(--font-jetbrains-mono), monospace",
-    fontSize: 11,
-    letterSpacing: "0.16em",
-    textTransform: "uppercase",
-    color: "#efefec",
-    display: "flex",
-    flexDirection: "column",
+  const rows = [
+    { icon: "↕", motion: "Swipe up · down", opens: "Chapters" },
+    { icon: "←", motion: "Swipe left", opens: "Index" },
+    { icon: "→", motion: "Swipe right", opens: "Case study" },
+  ];
+  const chip: CSSProperties = {
+    width: 36,
+    height: 36,
+    flexShrink: 0,
+    borderRadius: "50%",
+    border: `1px solid color-mix(in srgb, ${accent} 50%, transparent)`,
+    display: "inline-flex",
     alignItems: "center",
-    gap: 6,
+    justifyContent: "center",
+    fontSize: 17,
+    color: accent,
   };
-  const arrow: CSSProperties = { fontSize: 26, color: accent, lineHeight: 1 };
   return (
     <div
       onClick={onDismiss}
@@ -318,9 +327,8 @@ function Coachmark({ accent, onDismiss }: { accent: string; onDismiss: () => voi
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 30,
+        gap: 34,
         padding: 32,
-        textAlign: "center",
       }}
     >
       <div
@@ -335,38 +343,41 @@ function Coachmark({ accent, onDismiss }: { accent: string; onDismiss: () => voi
         Swipe to explore
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          alignItems: "center",
-          justifyItems: "center",
-          gap: "18px 24px",
-        }}
-      >
-        <span />
-        <span style={label}>
-          <span style={arrow}>↑</span>
-        </span>
-        <span />
-
-        <span style={label}>
-          <span style={arrow}>←</span>
-          Index
-        </span>
-        <span style={{ ...label, color: "color-mix(in srgb, #efefec 55%, transparent)" }}>
-          Chapters
-        </span>
-        <span style={label}>
-          <span style={arrow}>→</span>
-          Case study
-        </span>
-
-        <span />
-        <span style={label}>
-          <span style={arrow}>↓</span>
-        </span>
-        <span />
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {rows.map((r) => (
+          <div
+            key={r.opens}
+            style={{ display: "flex", alignItems: "center", gap: 16 }}
+          >
+            <span aria-hidden style={chip}>
+              {r.icon}
+            </span>
+            <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-jetbrains-mono), monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "#efefec",
+                }}
+              >
+                {r.motion}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-jetbrains-mono), monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "color-mix(in srgb, #efefec 48%, transparent)",
+                }}
+              >
+                {r.opens}
+              </span>
+            </span>
+          </div>
+        ))}
       </div>
 
       <div
@@ -376,7 +387,6 @@ function Coachmark({ accent, onDismiss }: { accent: string; onDismiss: () => voi
           letterSpacing: "0.2em",
           textTransform: "uppercase",
           color: "color-mix(in srgb, #efefec 45%, transparent)",
-          marginTop: 8,
         }}
       >
         tap anywhere to start
