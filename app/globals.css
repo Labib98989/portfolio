@@ -66,20 +66,26 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Desktop locks scroll — the wheel listener owns vertical input and the
-     stage is letterboxed to a fixed aspect. Mobile needs native scroll for
-     the full-screen snap chapters in HomeMobile, so we relax this below
-     the breakpoint. */
+  /* The document itself never scrolls on any breakpoint. Desktop's wheel
+     listener owns vertical input over the letterboxed stage; mobile's
+     MobileApp owns it via swipe gestures. Pages that DO scroll (About,
+     Currently, case studies) run their own fixed scroll container — see
+     TransitionPageShell — independent of the body. */
   overflow: hidden;
 }
 
 @media (max-width: 767px) {
   html,
   body {
-    overflow: auto;
-    /* Background ground for mobile is the riso shadow ink — matches the
-       transition canvas, so the snap-chapter sections (which paint their
-       own per-chapter gradients) sit on the same color as the page chrome. */
+    /* The mobile home (MobileApp) is a fixed, swipe-driven card deck that owns
+       its own touch input (touch-action: none on the gesture surface). The
+       body stays unscrollable and overscroll is killed so a stray drag past a
+       card edge can't fire pull-to-refresh or the browser edge-back. Detail
+       pages scroll inside their own fixed shell, so this doesn't trap them. */
+    overflow: hidden;
+    overscroll-behavior: none;
+    /* Background ground is the riso shadow ink — matches the transition canvas
+       and the deck's letterbox so nothing flashes white at the edges. */
     background: #22201d;
   }
 }
@@ -163,4 +169,19 @@ button {
 @keyframes canvasOutLeft {
   from { transform: translateX(0); }
   to   { transform: translateX(-100%); }
+}
+
+/* Mobile deck — the "live" ring on the Currently card pulses outward. */
+@keyframes deckPulse {
+  0%   { transform: scale(0.7); opacity: 0.9; }
+  70%  { transform: scale(1.18); opacity: 0; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+.deck-pulse {
+  animation: deckPulse 2.4s cubic-bezier(0.4, 0.05, 0.15, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck-pulse {
+    animation: none;
+  }
 }

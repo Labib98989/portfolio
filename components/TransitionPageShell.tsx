@@ -1,11 +1,18 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { DECK_SPRING, DECK_SPRING_DUR_MS } from "@/lib/motion";
+import { useIsMobile } from "@/lib/useMediaQuery";
 import {
   TEXT_MS,
   TEXT_STAGGER_MS,
   useTransition,
 } from "./TransitionShell";
+
+// Mobile swipe-to-close uses the deck's springy curve so the page snaps back
+// with the same playful pop as the cards.
+const SHELL_SPRING = `transform ${DECK_SPRING_DUR_MS}ms ${DECK_SPRING}`;
 
 // Shared shell for every page that lives behind a TransitionShell canvas
 // (Currently Working, About, Case Study). Owns the scroll container, the
@@ -44,11 +51,88 @@ export function useDropStyle(): (index: number) => CSSProperties {
 
 export function TransitionPageShell({ children }: { children: ReactNode }) {
   const { phase, axis, navigate } = useTransition();
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
   const { x, y } = AXIS_OFFSET[axis];
+
+  // Where "back" returns to. On mobile we push "/" with the originating card's
+  // hash so the deck restores to the exact card — including About / Currently,
+  // which aren't tracked by ChapterState (without this they'd land on a chapter
+  // instead). Desktop keeps the plain "/" + ChapterState resume, untouched.
+  const backHref = !isMobile
+    ? "/"
+    : pathname === "/about"
+      ? "/#about"
+      : pathname === "/currently-working"
+        ? "/#currently"
+        : pathname.startsWith("/projects/")
+          ? `/#${pathname.slice("/projects/".length)}`
+          : "/";
+
+  // Mobile: swipe the whole page LEFT to close back to the deck — the reverse
+  // of the swipe-right that opened it (the page came in from the left, so it
+  // leaves to the left). Coexists with the article's vertical scroll via
+  // touch-action: pan-y plus a first-move axis lock — vertical drags scroll
+  // natively, a horizontal drag peels the page away (live), and release either
+  // commits the back-nav or springs the page back into place.
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const start = useRef<{ x: number; y: number; id: number } | null>(null);
+  const axisRef = useRef<"h" | "v" | null>(null);
+  const vx = useRef(0);
+  const lastX = useRef(0);
+  const lastT = useRef(0);
+
+  const onPointerDown = (e: ReactPointerEvent) => {
+    start.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    axisRef.current = null;
+    vx.current = 0;
+    lastX.current = e.clientX;
+    lastT.current = e.timeStamp;
+  };
+  const onPointerMove = (e: ReactPointerEvent) => {
+    const s = start.current;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.x;
+    const dy = e.clientY - s.y;
+    const dt = Math.max(1, e.timeStamp - lastT.current);
+    vx.current = (e.clientX - lastX.current) / dt;
+    lastX.current = e.clientX;
+    lastT.current = e.timeStamp;
+    if (axisRef.current === null) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+      axisRef.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+      if (axisRef.current === "h") setDragging(true);
+    }
+    // Clamp to leftward only — there's nothing to reveal on the right.
+    if (axisRef.current === "h") setDragX(Math.min(0, dx));
+  };
+  const finish = (e: ReactPointerEvent) => {
+    const s = start.current;
+    start.current = null;
+    const wasH = axisRef.current === "h";
+    axisRef.current = null;
+    setDragging(false);
+    setDragX(0);
+    if (!s || s.id !== e.pointerId || !wasH) return;
+    const dx = e.clientX - s.x;
+    const w = typeof window !== "undefined" ? window.innerWidth : 9999;
+    if (dx < -w * 0.25 || vx.current < -0.4) navigate(backHref, "back");
+  };
+
+  const swipeBind = isMobile
+    ? {
+        onPointerDown,
+        onPointerMove,
+        onPointerUp: finish,
+        onPointerCancel: finish,
+      }
+    : {};
 
   return (
     <div
       className="cw-scroll-shell"
+      {...swipeBind}
       style={
         {
           "--cw-x": `${x}px`,
@@ -61,6 +145,12 @@ export function TransitionPageShell({ children }: { children: ReactNode }) {
           color: FG,
           fontFamily: "var(--font-inter), sans-serif",
           background: "transparent",
+          // pan-y lets the article scroll vertically while we own horizontal.
+          touchAction: isMobile ? "pan-y" : undefined,
+          transform: isMobile ? `translateX(${dragX}px)` : undefined,
+          transition: isMobile ? (dragging ? "none" : SHELL_SPRING) : undefined,
+          boxShadow:
+            isMobile && dragX < 0 ? "24px 0 50px rgba(0,0,0,0.45)" : undefined,
         } as CSSProperties
       }
     >
@@ -85,7 +175,7 @@ export function TransitionPageShell({ children }: { children: ReactNode }) {
       `}</style>
 
       <button
-        onClick={() => navigate("/", "back")}
+        onClick={() => navigate(backHref, "back")}
         aria-label="Back to home"
         style={{
           position: "fixed",

@@ -31,6 +31,19 @@ export function AboutPage() {
         }}
       >
         <div style={dropStyle(0)}>
+          <img
+            src="/about-portrait.webp"
+            alt="Labib Karim"
+            style={{
+              width: "clamp(150px, 42vw, 196px)",
+              aspectRatio: "4 / 5",
+              objectFit: "cover",
+              borderRadius: 14,
+              display: "block",
+              marginBottom: 30,
+              border: `1px solid color-mix(in srgb, ${ACCENT} 38%, transparent)`,
+            }}
+          />
           <MetaLine />
         </div>
 

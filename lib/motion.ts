@@ -1,6 +1,17 @@
 export const EASE = "cubic-bezier(.4,.05,.15,1)";
 export const DUR = ".6s";
 
+// --- Mobile deck motion ---
+// Snappier and more playful than the desktop wheel. The vertical column uses a
+// fast ease-out with NO overshoot — a full-screen card can't overshoot without
+// flashing a sliver of the wrong neighbour. Things that slide OVER the deck
+// (the dial) and gesture snap-backs use a springy curve with a little overshoot
+// for that fun, dynamic pop.
+export const DECK_EASE = "cubic-bezier(.16, 1, .3, 1)"; // expo-out: rockets then settles
+export const DECK_DUR_MS = 300;
+export const DECK_SPRING = "cubic-bezier(.34, 1.56, .5, 1)"; // back-out: overshoots + bounces
+export const DECK_SPRING_DUR_MS = 460;
+
 export const STAGE_W = 1600;
 export const STAGE_H = 900;
 

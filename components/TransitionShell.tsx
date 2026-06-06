@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 // The transition is a two-layer, two-phase choreography. A black canvas
 // (Riso shadow ink) slides in along one axis to mask the route change,
@@ -97,6 +98,7 @@ export function useTransition() {
 export function TransitionShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   // Initial phase derives from the entry pathname so a direct/refresh load
   // of any target route lands on "at-rest" and "/" lands on "idle".
@@ -186,8 +188,16 @@ export function TransitionShell({ children }: { children: ReactNode }) {
     phase === "at-rest" ||
     phase === "text-out";
 
+  // Mobile hard-codes every detail page to slide from the side (left), so the
+  // route transition matches the swipe paradigm: detail comes in from the left
+  // and the swipe-left back sends it out the same way. Desktop keeps its
+  // per-route axes (About from right, Currently from top). This override lives
+  // only in the consumption layer — the stored `axis` state still tracks the
+  // desktop rule, so navigate()/back logic is untouched.
+  const effectiveAxis: TransitionAxis = isMobile ? "left" : axis;
+
   const axisCap =
-    axis === "top" ? "Top" : axis === "right" ? "Right" : "Left";
+    effectiveAxis === "top" ? "Top" : effectiveAxis === "right" ? "Right" : "Left";
 
   let canvasAnim = "none";
   if (phase === "cover-in") {
@@ -202,16 +212,16 @@ export function TransitionShell({ children }: { children: ReactNode }) {
   let restingTransform: string;
   if (canvasCovering) {
     restingTransform = "translate(0, 0)";
-  } else if (axis === "top") {
+  } else if (effectiveAxis === "top") {
     restingTransform = "translateY(-100%)";
-  } else if (axis === "right") {
+  } else if (effectiveAxis === "right") {
     restingTransform = "translateX(100%)";
   } else {
     restingTransform = "translateX(-100%)";
   }
 
   return (
-    <TransitionContext.Provider value={{ phase, axis, navigate }}>
+    <TransitionContext.Provider value={{ phase, axis: effectiveAxis, navigate }}>
       {children}
       <div
         aria-hidden
