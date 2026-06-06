@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Caveat, Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { ChapterStateProvider } from "@/components/ChapterState";
+import { RotateNotice } from "@/components/RotateNotice";
 import { TransitionShell } from "@/components/TransitionShell";
 import "./globals.css";
 
@@ -38,6 +39,11 @@ export const metadata: Metadata = {
     "Portfolio of Labib Karim — applied AI, security, hardware, and the systems-level work behind them.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -52,6 +58,7 @@ export default function RootLayout({
         <ChapterStateProvider>
           <TransitionShell>{children}</TransitionShell>
         </ChapterStateProvider>
+        <RotateNotice />
       </body>
     </html>
   );

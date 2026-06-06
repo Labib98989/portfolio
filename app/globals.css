@@ -185,3 +185,47 @@ button {
     animation: none;
   }
 }
+
+/* Landscape guard (components/RotateNotice). Hidden by default; shown only when
+   the device is a phone held sideways — landscape + short viewport + coarse
+   pointer — so laptops and tablets (tall viewports) never trigger it. There's
+   no dependable web orientation lock, so this overlay is the lock: a phone in
+   landscape only ever sees the portrait experience behind a "rotate" prompt. */
+.rotate-notice {
+  display: none;
+}
+.rotate-notice__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.rotate-notice__title {
+  font-family: var(--font-fraunces), serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 26px;
+  margin: 4px 0 0;
+}
+.rotate-notice__sub {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #efefec 52%, transparent);
+  margin: 0;
+}
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  .rotate-notice {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    background: #22201d;
+    color: #efefec;
+    padding: 24px;
+    text-align: center;
+  }
+}

@@ -218,7 +218,7 @@ export function MobileApp() {
           transition: state.dragging ? "none" : "opacity .3s ease",
         }}
       >
-        ›
+        ‹
       </div>
 
       {/* Position rail — where you are in the spine */}
