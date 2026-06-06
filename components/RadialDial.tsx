@@ -346,7 +346,10 @@ export function RadialDial({
         >
           ↕
         </span>
-        {isDial ? "Scrolling spins the wheel" : "Hover · scroll to rotate"}
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
+          <span>{isDial ? "Scroll to spin" : "Scroll to turn"}</span>
+          <span>Click to expand</span>
+        </span>
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import {
 } from "@/lib/motion";
 import { BackgroundFor } from "./Backgrounds";
 import { useChapterState } from "./ChapterState";
+import { DeskHint } from "./DeskHint";
 import { FocusOverlay } from "./FocusOverlay";
 import { Header } from "./Header";
 import { HeroChapter } from "./HeroChapter";
@@ -56,6 +57,8 @@ export default function Home() {
   // -1 = backward attempt past first, +1 = forward attempt past last, 0 = idle
   const [bounce, setBounce] = useState<Dir | 0>(0);
   const [tagline, setTagline] = useState(TAGLINES[0]);
+  // First-load guidance: dismissed on the first scroll / arrow key / wheel click.
+  const [hintDismissed, setHintDismissed] = useState(false);
 
   // Random tagline on mount (kept in effect to avoid SSR/CSR mismatch).
   useEffect(() => {
@@ -123,6 +126,7 @@ export default function Home() {
       accum += e.deltaY;
       const now = Date.now();
       if (Math.abs(accum) >= 50 && now - lastSwap > 360) {
+        setHintDismissed(true);
         const d: Dir = accum > 0 ? 1 : -1;
         const next = projectIdx + d;
         if (next < 0 || next >= len) {
@@ -142,6 +146,7 @@ export default function Home() {
   // Click a notch → jump, exit focus. Direction is straightforward since the
   // list no longer wraps.
   const jumpToIndex = (newIdx: number) => {
+    setHintDismissed(true);
     setFocused(false);
     if (newIdx === projectIdx) return;
     setDir(newIdx > projectIdx ? 1 : -1);
@@ -157,6 +162,34 @@ export default function Home() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [focused]);
+
+  // Arrow keys change chapter, paced to match the wheel: a single tap steps once
+  // immediately, and holding a key steps at the wheel's cadence rather than the
+  // OS key-repeat rate (which otherwise flies through chapters). Up/Left =
+  // previous, Down/Right = next. The cooldown ref persists across re-subscribes.
+  const arrowLastRef = useRef(0);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      let d: Dir | 0 = 0;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") d = 1;
+      else if (e.key === "ArrowUp" || e.key === "ArrowLeft") d = -1;
+      if (d === 0) return;
+      e.preventDefault();
+      const now = Date.now();
+      if (now - arrowLastRef.current < 340) return;
+      arrowLastRef.current = now;
+      setHintDismissed(true);
+      const next = projectIdx + d;
+      if (next < 0 || next >= len) {
+        triggerBounce(d);
+        return;
+      }
+      setDir(d);
+      setProjectIdx(next);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [projectIdx, len]);
 
   const dialOffsetX = focused ? FOCUS.cx - cx : 0;
   const dialOffsetY = focused ? FOCUS.cy - cy : 0;
@@ -280,7 +313,10 @@ export default function Home() {
         <div
           onMouseEnter={() => !focused && setZone("dial")}
           onMouseLeave={() => !focused && setZone(null)}
-          onClick={() => setFocused((f) => !f)}
+          onClick={() => {
+            setHintDismissed(true);
+            setFocused((f) => !f);
+          }}
           style={{
             position: "absolute",
             left: focused ? 0 : 960,
@@ -335,6 +371,8 @@ export default function Home() {
         />
 
         <Tagline text={tagline} />
+
+        <DeskHint dismissed={hintDismissed} hidden={focused || isHero} />
 
         {/* Notch hit pills — pill extends in the direction of its label so
             it always covers notch + label together. Pill direction follows
